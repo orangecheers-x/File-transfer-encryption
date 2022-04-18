@@ -3,4 +3,4 @@ project(dsj)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(dsj main.cpp DESEncryption.cpp DESEncryption.h)
+add_executable(dsj main.cpp DESEncryption.cpp DESEncryption.h test.cpp test.h)
