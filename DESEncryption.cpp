@@ -3,7 +3,6 @@
 //
 
 #include "DESEncryption.h"
-#include <iostream>
 std::bitset<48> DESEncryption::keys[16] = {0};
 
 void DESEncryption::Encrypt64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<64> &key, bool isdecryption) {
@@ -26,6 +25,20 @@ void DESEncryption::Encrypt64(std::bitset<64> &dst, const std::bitset<64> &src, 
     for(int i = 0;i < 32;i++) t[i] = a[i];
     for(int i = 0;i < 32;i++) t[i+32] = b[i];
     performpermutation(dst, t, IPinv);
+    return ;
+}
+
+void DESEncryption::DES3_64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<192> &key, bool isdecryption)
+{
+    std::bitset<64> key3s[3];
+    for(int i = 0;i < 192;i++)
+        key3s[i/64][i%64] = key[i];
+    if(isdecryption) std::reverse(key3s, key3s+3);
+    std::bitset<64> t, f;
+    f = src;
+    for(int i = 0;i < 3;i++)
+        Encrypt64(t, f, key3s[i], isdecryption), f = t;
+    dst = t;
     return ;
 }
 
