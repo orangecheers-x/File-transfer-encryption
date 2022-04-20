@@ -9,6 +9,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <fstream>
+#include "DESEncryption.h"
+#include <algorithm>
 
 Receiver::Receiver() {
     ss = socket(AF_INET, SOCK_STREAM, 0);
@@ -52,23 +54,29 @@ void Receiver::startlisten() {
         std::cerr << "Connect Error!" << std::endl;
         exit(1);
     }
-    char buffer[1024];
-    char sendbuf[1024];
+    char buffer[BUF_SIZE];
+    char sendbuf[BUF_SIZE];
     strcpy(sendbuf, "ww");
     std::ofstream outfile("rec.pdf", std::ios::out|std::ios::binary);
-    unsigned long sum = 0;
-    unsigned long filesize;
+
+    long filesize;
     recv(conn, &filesize, sizeof(unsigned long), 0);
     std::cout << filesize << "!" << std::endl;
-    while(sum < filesize)
+    while(filesize > 0)
     {
         memset(buffer, 0, sizeof buffer);
-        ssize_t len = recv(conn, buffer, sizeof buffer, 0);
-        if(len == 0) break;
-        sum += len;
-        std::cout << len << " " << sum << std::endl;
-        outfile.write(buffer, len * sizeof(char));
-        //send(conn, sendbuf, len , 0);
+        long recved = 0;
+        while((recved += recv(conn, buffer+recved, BUF_SIZE-recved, 0)) < std::min((((filesize-1) >> 3) + 1) << 3, (long)BUF_SIZE));
+
+        char tbuf[BUF_SIZE];
+        unsigned char tkey[8];
+        *(long long*) tkey = 0x0123456789ABCDEFll;
+        for(int i = 0;i < recved;i += 8)
+        {
+            DESEncryption::Encrypt64((unsigned char*)tbuf+i, (unsigned char*)buffer+i, tkey, true);
+        }
+        outfile.write(tbuf, std::min(filesize, (long)BUF_SIZE) * sizeof(char));
+        filesize -= recved;
     }
     close(conn);
     close(ss);

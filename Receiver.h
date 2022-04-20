@@ -8,6 +8,7 @@
 
 class Receiver {
 public:
+    constexpr static int BUF_SIZE = 4096;
     int ss, conn;
     Receiver();
     void bindport(int port);

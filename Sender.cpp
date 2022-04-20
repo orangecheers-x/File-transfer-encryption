@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <fstream>
 #include "Sender.h"
+#include "DESEncryption.h"
 #include <filesystem>
 #include <algorithm>
 
@@ -31,17 +32,23 @@ void Sender::sendfile() {
     unsigned long filesize = std::filesystem::file_size(p);
     send(ss, &filesize, sizeof(unsigned long), 0);
     std::cout << filesize << "!" << std::endl;
-    char sendbuf[1024];
-    char recvbuf[1024];
+    char sendbuf[BUF_SIZE];
     while(filesize > 0) {
         std::cout << filesize << std::endl;
         infile.read(sendbuf, sizeof(sendbuf));
         long readsize = 0;
         readsize = infile.gcount();
+        //long crysize = ((((readsize-1) >> 6) + 1)<<6);
         filesize -= readsize;
+        char tbuf[BUF_SIZE];
+        unsigned char tkey[8];
+        *(long long*) tkey = 0x0123456789ABCDEFll;
+        for(int i = 0;i < BUF_SIZE && i < readsize;i += 8)
+            DESEncryption::Encrypt64((unsigned char*)tbuf+i, (unsigned char*)sendbuf+i, tkey, false);
+
         long sent = 0;
-        while((sent += send(ss, sendbuf+sent, readsize-sent, 0)) < readsize);
-        std::cout << "!" << 1 << std::endl;
+        while((sent += send(ss, tbuf+sent, BUF_SIZE-sent, 0)) < ((((readsize-1) >> 3) + 1) << 3));
+        //std::cout << "!" << 1 << std::endl;
     }
     close(ss);
     infile.close();

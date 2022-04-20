@@ -24,6 +24,5 @@ int main() {
         s.connectserver("127.0.0.1", 9999);
         s.sendfile();
     }
-
     return 0;
 }

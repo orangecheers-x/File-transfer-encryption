@@ -10,7 +10,7 @@
 class DESEncryption {
 public:
     DESEncryption()= default;
-    static void Encrypt64(std::bitset<64>& dst, const std::bitset<64>& src, const std::bitset<64>& key, bool isdecryption);
+    static void Encrypt64(unsigned char *dst, const unsigned char* src, const unsigned char *key, bool isdecryption);
     static std::bitset<48> keys[16];
     static void generatekeys(const std::bitset<64> &key, bool isdecryption);
     template<size_t Ndst, size_t Nsrc>
@@ -67,6 +67,8 @@ public:
     };
 
     static void DES3_64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<192> &key, bool isdecryption);
+
+    static void Encrypt64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<64> &key, bool isdecryption);
 };
 
 

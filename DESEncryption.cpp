@@ -3,7 +3,35 @@
 //
 
 #include "DESEncryption.h"
+#include <iostream>
 std::bitset<48> DESEncryption::keys[16] = {0};
+
+
+void DESEncryption::Encrypt64(unsigned char *dst, const unsigned char* src, const unsigned char *key, bool isdecryption)
+{
+    std::bitset<64> bsrc;
+    for(int i = 0;i < 64;i++)
+    {
+        bsrc[i] = ((src[i>>3]>>(i&7))&1);
+    }
+    std::bitset<64> bkey;
+    for(int i = 0;i < 64;i++)
+    {
+        bkey[i] = ((key[i>>3]>>(i&7))&1);
+    }
+    std::bitset<64> bdst;
+    Encrypt64(bdst, bsrc, bkey, isdecryption);
+
+    //std::cout << "src::" << bsrc << std::endl;
+    //std::cout << "dst::" << bdst << std::endl;
+    for(int i = 0;i < 8;i++)
+    {
+        dst[i] = 0;
+        for(int j = 0;j < 8;j++)
+            dst[i] |= (bdst[(i << 3)|j] << j);
+    }
+    return ;
+}
 
 void DESEncryption::Encrypt64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<64> &key, bool isdecryption) {
     //std::cout << "!" << std::endl;

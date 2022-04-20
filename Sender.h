@@ -10,6 +10,7 @@
 
 class Sender {
 public:
+    constexpr static int BUF_SIZE = 4096;
     int ss;
     Sender();
     void connectserver(const char* ip, int port);
