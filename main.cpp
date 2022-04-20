@@ -2,20 +2,28 @@
 #include <bitset>
 #include "DESEncryption.h"
 #include "DHKeyExchange.h"
+#include "Receiver.h"
+#include "Sender.h"
 
 using std::cout;
 using std::endl;
+using std::cin;
 
 
 int main() {
-    std::bitset<64> b(99);
-    std::bitset<192> k(9999999999);
-    std::bitset<64> ans, ans2;
-    cout << b << endl;
-    DESEncryption::DES3_64(ans, b, k, false);
-    cout << ans << endl;
-    DESEncryption::DES3_64(ans2, ans, k, true);
-    cout << ans2 << endl;
+    int x;
+    cin >> x;
+    if(x == 0) {
+        cout << "Starting as a Server/Receiver..." << endl;
+        Receiver r;
+        r.bindport(9999);
+        r.startlisten();
+    }else{
+        cout << "Starting as a Client/Sender..." << endl;
+        Sender s;
+        s.connectserver("127.0.0.1", 9999);
+        s.sendfile();
+    }
 
     return 0;
 }
