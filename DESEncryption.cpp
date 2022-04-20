@@ -70,6 +70,25 @@ void DESEncryption::DES3_64(std::bitset<64> &dst, const std::bitset<64> &src, co
     return ;
 }
 
+void DESEncryption::DES3_64(unsigned char* dst, const unsigned char* src, const unsigned char* key, bool isdecryption)
+{
+    unsigned char tkeys[24];
+    memcpy(tkeys, key, 24*sizeof(char));
+    if(isdecryption) {
+        std::reverse((long long*)tkeys, ((long long*)tkeys)+3);
+    }
+    unsigned char t[8], f[8];
+    memcpy(f, src, 8*sizeof(char));
+    for(int i = 0;i < 3;i++)
+    {
+        Encrypt64(t, f, tkeys+(i<<3), isdecryption),
+                memcpy(f, t, 8*sizeof(char));
+        //std::cout << i << "!" << *(long long *)(tkeys+(i<<3)) << std::endl;
+    }
+    memcpy(dst, f, 8*sizeof(char));
+    return ;
+}
+
 void DESEncryption::generatekeys(const std::bitset<64> &key, bool isdecryption) {
     std::bitset<28> z, y;
     performpermutation(z, key, PC1z);

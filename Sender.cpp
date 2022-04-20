@@ -25,31 +25,80 @@ void Sender::connectserver(const char* ip, int port) {
         std::cerr << "Connect Error" << std::endl;
 }
 
+void Sender::sendbuf(char *buf, int len) const
+{
+    long sent = 0;
+    while((sent += send(ss, buf+sent, (len-sent)*sizeof(char),0)) < len);
+}
 
-void Sender::sendfile() {
-    std::ifstream infile("test.pdf", std::ios::in|std::ios::binary);
-    std::filesystem::path p{"test.pdf"};
+void Sender::recvbuf(char *buf, int len) const
+{
+    long sent = 0;
+    while((sent += recv(ss, buf+sent, (len-sent)*sizeof(char),0)) < len);
+}
+
+void Sender::exchangekeys() {
+    gmp_randclass r(gmp_randinit_default);
+    r.seed(time(nullptr));
+    mpz_class P = DHKeyExchange::getrandomprime(KEY_LENGTH<<3, r);
+    mpz_class G = DHKeyExchange::getprimitiveroot(P);
+
+    char bufP[128];
+    memset(bufP, 0, sizeof bufP);
+    DHKeyExchange::getb(bufP, P);
+    sendbuf(bufP, KEY_LENGTH);
+
+    memset(bufP, 0, sizeof bufP);
+    DHKeyExchange::getb(bufP, G);
+    sendbuf(bufP, KEY_LENGTH);
+
+    std::cout << "P: " << P.get_str(16) << std::endl;
+    std::cout << "G: " << G.get_str(16) << std::endl;
+
+    dh.init(P, G);
+    dh.generateprivatekey(128, r);
+
+    memset(bufP, 0, 128 * sizeof(char));
+    DHKeyExchange::getb(bufP, dh.getpublickey());
+    std::cout << "public key:" << DHKeyExchange::getmpz(bufP, 128).get_str(16) << std::endl;
+    sendbuf(bufP, 128);
+
+    memset(bufP, 0, 128 * sizeof(char));
+    recvbuf(bufP, 128);
+    dh.received(DHKeyExchange::getmpz(bufP, 128));
+
+    std::cout << "exchanged key:" << dh.getkey().get_str(16) << std::endl;
+
+}
+void Sender::sendfile(const char* filename) const {
+    std::ifstream infile(filename, std::ios::in|std::ios::binary);
+    std::filesystem::path p{filename};
     unsigned long filesize = std::filesystem::file_size(p);
     send(ss, &filesize, sizeof(unsigned long), 0);
-    std::cout << filesize << "!" << std::endl;
+    std::cout << "Total File Size: " << filesize << " Bytes" << std::endl;
     char sendbuf[BUF_SIZE];
     while(filesize > 0) {
-        std::cout << filesize << std::endl;
         infile.read(sendbuf, sizeof(sendbuf));
         long readsize = 0;
         readsize = infile.gcount();
         //long crysize = ((((readsize-1) >> 6) + 1)<<6);
         filesize -= readsize;
         char tbuf[BUF_SIZE];
-        unsigned char tkey[8];
-        *(long long*) tkey = 0x0123456789ABCDEFll;
+        char tkey[24];
+        DHKeyExchange::getb(tkey, dh.getkey());
         for(int i = 0;i < BUF_SIZE && i < readsize;i += 8)
-            DESEncryption::Encrypt64((unsigned char*)tbuf+i, (unsigned char*)sendbuf+i, tkey, false);
+            DESEncryption::DES3_64((unsigned char*)tbuf+i, (unsigned char*)sendbuf+i, (unsigned char*)tkey, false);
 
         long sent = 0;
         while((sent += send(ss, tbuf+sent, BUF_SIZE-sent, 0)) < ((((readsize-1) >> 3) + 1) << 3));
         //std::cout << "!" << 1 << std::endl;
+        std::cout << filesize << " Bytes waiting for sent..." << std::endl;
     }
-    close(ss);
     infile.close();
+
+}
+
+Sender::~Sender() {
+    std::cout << "Closed!" << std::endl;
+    close(ss);
 }

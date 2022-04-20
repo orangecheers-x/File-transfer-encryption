@@ -5,14 +5,27 @@
 #ifndef DSJ_RECEIVER_H
 #define DSJ_RECEIVER_H
 
+#include "DHKeyExchange.h"
 
 class Receiver {
 public:
     constexpr static int BUF_SIZE = 4096;
-    int ss, conn;
+    constexpr static int KEY_LENGTH_BYTES = 24;
+    int ss, conn{};
     Receiver();
-    void bindport(int port);
-    void startlisten();
+    ~Receiver();
+    void bindport(int port) const;
+    DHKeyExchange dh;
+
+    void recvbuf(char *buf, int len) const;
+
+    void waitforconnect();
+
+    void recvfile(const char *filename) const;
+
+    void exchangekeys();
+
+    void sendbuf(char *buf, int len) const;
 };
 
 

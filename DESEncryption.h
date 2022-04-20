@@ -69,6 +69,8 @@ public:
     static void DES3_64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<192> &key, bool isdecryption);
 
     static void Encrypt64(std::bitset<64> &dst, const std::bitset<64> &src, const std::bitset<64> &key, bool isdecryption);
+
+    static void DES3_64(unsigned char *dst, const unsigned char *src, const unsigned char *key, bool isdecryption);
 };
 
 

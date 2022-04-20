@@ -26,8 +26,27 @@ void DHKeyExchange::received(const mpz_class& key2) {
     return;
 }
 
-mpz_class DHKeyExchange::getkey() {
+
+
+mpz_class DHKeyExchange::getkey() const {
     return k;
+}
+
+void DHKeyExchange::getb(char* dst, const mpz_class& k) {
+    mpz_export(dst, nullptr, -1, 1, -1, 0, k.get_mpz_t());
+}
+
+mpz_class DHKeyExchange::getmpz(char *src, int len)
+{
+    mpz_class t;
+    mpz_import(t.get_mpz_t(), len, -1, 1, -1, 0, src);
+    return t;
+}
+
+void DHKeyExchange::init(const mpz_class& nP, const mpz_class& nG)
+{
+    this->P = nP;
+    this->G = nG;
 }
 
 mpz_class DHKeyExchange::getrandomprime(int len, gmp_randclass &r) {
