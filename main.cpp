@@ -10,8 +10,13 @@ using std::endl;
 using std::cin;
 
 
-int main() {
+int main(int argc, const char* argv[]) {
 
+    if(argc != 3)
+    {
+        cout << "<Usage>: dsj [server|client] PORT FILENAME";
+        return 2;
+    }
     int x;
     cin >> x;
     if(x == 0) {

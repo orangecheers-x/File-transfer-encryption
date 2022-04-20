@@ -3,7 +3,6 @@
 //
 
 #include "DESEncryption.h"
-#include <iostream>
 std::bitset<48> DESEncryption::keys[16] = {0};
 
 

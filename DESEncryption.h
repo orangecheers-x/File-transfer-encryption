@@ -6,6 +6,9 @@
 #define DSJ_DESENCRYPTION_H
 
 #include <bitset>
+#include <iostream>
+#include <algorithm>
+#include <cstring>
 
 class DESEncryption {
 public:
