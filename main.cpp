@@ -12,11 +12,6 @@ using std::cin;
 
 int main(int argc, const char* argv[]) {
 
-    if(argc != 3)
-    {
-        cout << "<Usage>: dsj [server|client] PORT FILENAME";
-        return 2;
-    }
     int x;
     cin >> x;
     if(x == 0) {
@@ -29,7 +24,7 @@ int main(int argc, const char* argv[]) {
     }else{
         cout << "Starting as a Client/Sender..." << endl;
         Sender s;
-        s.connectserver("127.0.0.1", 9999);
+        s.connectserver("82.156.17.131", 9999);
         s.exchangekeys();
         s.sendfile("test.pdf");
     }
